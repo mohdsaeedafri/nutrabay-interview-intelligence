@@ -43,6 +43,9 @@ def initialize_state() -> None:
     st.session_state.setdefault("generation_source", "")
     st.session_state.setdefault("finalization_result", None)
     st.session_state.setdefault("finalized_fingerprint", "")
+    st.session_state.setdefault("ai_connection_status", "unverified")
+    st.session_state.setdefault("ai_diagnostic", "")
+    st.session_state.setdefault("ai_active_model", "")
 
 
 def current_questions() -> list[ReviewQuestion]:
@@ -75,19 +78,23 @@ def load_demo_set() -> None:
     st.session_state.finalized_fingerprint = ""
 
 
-def generate_live() -> None:
+def generate_live() -> bool:
     jd = st.session_state.jd_text.strip()
     if not 100 <= len(jd) <= 20_000:
         st.error("Enter a job description between 100 and 20,000 characters.")
-        return
+        return False
     generator = GeminiQuestionGenerator(settings.gemini_api_key, settings.gemini_model)
     with st.spinner("Building a role-specific interview plan…"):
         role_title, questions = generator.generate(jd, int(st.session_state.generation_count))
     save_questions(questions)
     st.session_state.role_title = role_title
-    st.session_state.generation_source = f"Live AI · {settings.gemini_model}"
+    st.session_state.generation_source = f"Live AI · {generator.last_model}"
+    st.session_state.ai_connection_status = "connected"
+    st.session_state.ai_diagnostic = ""
+    st.session_state.ai_active_model = generator.last_model
     st.session_state.finalization_result = None
     st.session_state.finalized_fingerprint = ""
+    return True
 
 
 def current_approval_fingerprint(questions: list[ReviewQuestion]) -> str:
@@ -169,12 +176,18 @@ with st.container(border=True):
         if settings.ai_configured:
             if st.button("✦ Generate with AI", type="primary", use_container_width=True):
                 try:
-                    generate_live()
-                    st.rerun()
+                    if generate_live():
+                        st.rerun()
                 except GenerationError as exc:
+                    st.session_state.ai_connection_status = "failed"
+                    st.session_state.ai_diagnostic = exc.diagnostic_code
                     st.error(str(exc))
                 except Exception:
-                    st.error("Question generation failed safely. Retry or load the curated demo set.")
+                    st.session_state.ai_connection_status = "failed"
+                    st.session_state.ai_diagnostic = "AI-CLIENT"
+                    st.error(
+                        "[AI-CLIENT] The Gemini client could not start. The secret was not displayed or changed."
+                    )
         else:
             st.button(
                 "✦ Generate with AI",
@@ -233,9 +246,14 @@ if questions:
                                 )
                                 st.session_state[text_key] = replacement
                                 item.text = replacement
+                                st.session_state.ai_connection_status = "connected"
+                                st.session_state.ai_diagnostic = ""
+                                st.session_state.ai_active_model = generator.last_model
                                 save_questions(questions)
                                 st.rerun()
                             except GenerationError as exc:
+                                st.session_state.ai_connection_status = "failed"
+                                st.session_state.ai_diagnostic = exc.diagnostic_code
                                 st.error(str(exc))
 
                     item.included = bool(included_value)
@@ -325,7 +343,17 @@ if result:
             )
 
 with st.expander("Deployment readiness"):
-    st.write("Live AI", "✅ Configured" if settings.ai_configured else "○ Awaiting Gemini key")
+    if not settings.ai_configured:
+        ai_readiness = "○ Awaiting Gemini key"
+    elif st.session_state.ai_connection_status == "connected":
+        active_model = st.session_state.ai_active_model or settings.gemini_model
+        ai_readiness = f"✅ Connected · {active_model}"
+    elif st.session_state.ai_connection_status == "failed":
+        diagnostic = st.session_state.ai_diagnostic or "AI-UNKNOWN"
+        ai_readiness = f"⚠ Key present · connection failed ({diagnostic})"
+    else:
+        ai_readiness = "◐ Key present · connection not yet verified"
+    st.write("Live AI", ai_readiness)
     st.write(
         "Google Apps Script",
         "✅ Configured" if settings.integration_configured else "○ Awaiting deployed /exec URL and token",

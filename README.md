@@ -27,7 +27,7 @@ Never commit `.streamlit/secrets.toml`. Its expected server-side values are:
 
 ```toml
 GEMINI_API_KEY = "replace-locally"
-GEMINI_MODEL = "gemini-3.5-flash"
+GEMINI_MODEL = "gemini-3.6-flash"
 APPS_SCRIPT_WEB_APP_URL = "https://script.google.com/macros/s/DEPLOYMENT_ID/exec"
 INTEGRATION_TOKEN = "replace-with-a-random-value-at-least-32-characters-long"
 ```

@@ -5,7 +5,7 @@ The production-shaped demo uses three free services:
 | Layer | Service | Purpose | Cost for this demo |
 |---|---|---|---|
 | Web application | Streamlit Community Cloud | Job-description input, AI generation, manager review | Free Community Cloud account |
-| AI | Gemini Developer API, `gemini-3.5-flash` | Structured question generation and replacement | Free-tier API usage, subject to Google's current limits |
+| AI | Gemini Developer API, `gemini-3.6-flash` | Structured question generation and replacement | Free-tier API usage, subject to Google's current limits |
 | Scoring and data | Google Apps Script + Google Sheets | Public scorecard and cloud persistence | Included with the owner's Google account, subject to quotas |
 
 No card, paid database, custom domain, or separate backend is required. Use fictional sample data only. The Gemini free tier may use submitted content to improve Google products, so never paste candidate data or confidential material into the generator.
@@ -62,7 +62,7 @@ Use the `/exec` production URL, not the `/dev` test URL. When Apps Script code c
 2. Create an API key for this demo.
 3. Store it only in Streamlit's secret settings.
 
-The application defaults to the stable model string `gemini-3.5-flash`. The curated demo set remains available if the live AI service is unavailable or the key has not yet been configured.
+The application defaults to the stable model string `gemini-3.6-flash`. It first uses the configured model, then tries free stable compatibility models only when the configured model is unavailable. The curated demo set remains available if the live AI service is unavailable or the key has not yet been configured.
 
 ## 4. Deploy Streamlit Community Cloud
 
@@ -84,13 +84,26 @@ First ensure the completed code is on the repository's `main` branch.
 
 ```toml
 GEMINI_API_KEY = "replace-with-owner-key"
-GEMINI_MODEL = "gemini-3.5-flash"
+GEMINI_MODEL = "gemini-3.6-flash"
 APPS_SCRIPT_WEB_APP_URL = "https://script.google.com/macros/s/REPLACE_DEPLOYMENT_ID/exec"
 INTEGRATION_TOKEN = "replace-with-the-same-random-token"
 ```
 
 5. Click **Deploy** and wait for the health check to finish.
 6. Copy the assigned `https://...streamlit.app` URL.
+
+### Live AI diagnostics
+
+`Deployment readiness` distinguishes a secret that merely exists from a connection that has actually succeeded. A failed request displays a safe diagnostic code without exposing the key:
+
+| Code | Meaning | Action |
+|---|---|---|
+| `AI-KEY` | Invalid, expired, leaked, or blocked key | Create a fresh Gemini API key in Google AI Studio and replace only `GEMINI_API_KEY` |
+| `AI-ACCESS` | Key lacks Gemini permission | Use a Google AI Studio Gemini key, not OAuth credentials or an Apps Script token |
+| `AI-REGION` | Free tier unavailable for the key's project/region | Verify one prompt with the same key in Google AI Studio |
+| `AI-QUOTA` | Free-tier rate or usage limit reached | Wait for the limit to reset, then retry |
+| `AI-MODEL` | Configured and fallback models unavailable | Recheck the model name and Google AI Studio access |
+| `AI-SERVICE` / `AI-TIMEOUT` | Temporary Google service/network failure | Retry shortly; application edits remain in the session |
 
 ## 5. Production URL validation
 
