@@ -96,16 +96,17 @@ def _is_model_error(code: int, status: str, message: str) -> bool:
     )
 
 
-def _can_try_legacy_endpoint(exc: Exception) -> bool:
+def _can_try_current_endpoint(exc: Exception) -> bool:
     code, status, message = _exception_details(exc)
     if _is_key_error(code, message):
         return False
     if code in {401, 403, 429} or status in {"PERMISSION_DENIED", "RESOURCE_EXHAUSTED"}:
         return False
-    # A 400/404 can mean that a key/model has not yet been enabled for the
-    # current Interactions endpoint. Local SDK shape errors should also use the
-    # proven generateContent compatibility path.
-    return code in {400, 404} or isinstance(exc, (AttributeError, TypeError, ValueError))
+    # The stable generateContent API is the primary production path. Only a
+    # request-shape/SDK compatibility failure should fall through to the newer
+    # Interactions endpoint. Model-not-found errors should instead try the next
+    # stable model candidate.
+    return code == 400 or isinstance(exc, (AttributeError, TypeError, ValueError))
 
 
 def generation_error_from_exception(exc: Exception) -> "GenerationError":
@@ -193,7 +194,10 @@ class GeminiQuestionGenerator:
 
             self.client = genai.Client(
                 api_key=api_key,
-                http_options=types.HttpOptions(timeout=60_000),
+                http_options=types.HttpOptions(
+                    timeout=60_000,
+                    retry_options=types.HttpRetryOptions(attempts=2),
+                ),
             )
 
     def _generate_legacy(
@@ -230,7 +234,7 @@ class GeminiQuestionGenerator:
                 "schema": _schema_json(schema),
             },
             generation_config={"max_output_tokens": 8_192},
-            timeout=60,
+            timeout=30,
         )
 
     def _generate(self, prompt: str, schema: type[GeneratedQuestionSet] | type[GeneratedQuestion]) -> Any:
@@ -240,18 +244,20 @@ class GeminiQuestionGenerator:
         )
 
         for model in self.model_candidates:
-            if supports_current_api:
-                try:
-                    response = self._generate_current(model, prompt, schema)
-                    self.last_model = model
-                    return response
-                except Exception as exc:
-                    last_error = exc
-                    if not _can_try_legacy_endpoint(exc):
-                        raise
-
             try:
                 response = self._generate_legacy(model, prompt, schema)
+                self.last_model = model
+                return response
+            except Exception as exc:
+                last_error = exc
+                code, status, message = _exception_details(exc)
+                if _is_model_error(code, status, message):
+                    continue
+                if not supports_current_api or not _can_try_current_endpoint(exc):
+                    raise
+
+            try:
+                response = self._generate_current(model, prompt, schema)
                 self.last_model = model
                 return response
             except Exception as exc:

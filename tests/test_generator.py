@@ -82,36 +82,36 @@ def test_generator_accepts_structured_pydantic_response() -> None:
     assert len(client.models.calls) == 1
 
 
-def test_generator_prefers_current_interactions_api_and_json_schema() -> None:
-    payload = valid_generated_set().model_dump_json()
-    client = FakeCurrentClient([FakeResponse(output_text=payload)])
+def test_generator_prefers_standard_generate_content_api_and_json_schema() -> None:
+    client = FakeCurrentClient([], [FakeResponse(parsed=valid_generated_set())])
     generator = GeminiQuestionGenerator("", "gemini-3.6-flash", client=client)
 
     role, questions = generator.generate(load_sample_jd(), 15)
 
     assert role == "Senior Analyst - D2C Growth"
     assert len(questions) == 15
-    assert len(client.interactions.calls) == 1
-    assert len(client.models.calls) == 0
-    response_format = client.interactions.calls[0]["response_format"]
-    assert response_format["mime_type"] == "application/json"
-    assert response_format["schema"]["properties"]["questions"]["maxItems"] == 15
-    assert "maxLength" not in response_format["schema"]["properties"]["role_title"]
+    assert len(client.models.calls) == 1
+    assert len(client.interactions.calls) == 0
+    config = client.models.calls[0]["config"]
+    assert config.response_mime_type == "application/json"
+    assert config.response_json_schema["properties"]["questions"]["maxItems"] == 15
+    assert "maxLength" not in config.response_json_schema["properties"]["role_title"]
 
 
-def test_generator_uses_legacy_endpoint_when_current_contract_is_rejected() -> None:
-    current_error = FakeApiError(400, "INVALID_ARGUMENT", "Unknown field response_format")
-    client = FakeCurrentClient([current_error], [FakeResponse(parsed=valid_generated_set())])
+def test_generator_uses_interactions_when_standard_contract_is_rejected() -> None:
+    standard_error = FakeApiError(400, "INVALID_ARGUMENT", "Unknown structured output field")
+    payload = valid_generated_set().model_dump_json()
+    client = FakeCurrentClient([FakeResponse(output_text=payload)], [standard_error])
     generator = GeminiQuestionGenerator("", "gemini-3.6-flash", client=client)
 
     _, questions = generator.generate(load_sample_jd(), 15)
 
     assert len(questions) == 15
-    assert len(client.interactions.calls) == 1
     assert len(client.models.calls) == 1
-    config = client.models.calls[0]["config"]
-    assert config.response_mime_type == "application/json"
-    assert config.response_json_schema["required"] == ["role_title", "questions"]
+    assert len(client.interactions.calls) == 1
+    response_format = client.interactions.calls[0]["response_format"]
+    assert response_format["mime_type"] == "application/json"
+    assert response_format["schema"]["required"] == ["role_title", "questions"]
 
 
 def test_generator_falls_back_when_configured_model_is_missing() -> None:
