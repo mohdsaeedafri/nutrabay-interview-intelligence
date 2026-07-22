@@ -20,6 +20,20 @@ def test_app_loads_without_secrets_or_exceptions() -> None:
     assert not find_button(app, "Load curated demo set").disabled
 
 
+def test_readiness_does_not_claim_unverified_key_is_connected() -> None:
+    app = AppTest.from_file(str(APP), default_timeout=20)
+    app.secrets["GEMINI_API_KEY"] = "test-key"
+    app.secrets["GEMINI_MODEL"] = "gemini-3.6-flash"
+    app.run()
+
+    assert not app.exception
+    assert not find_button(app, "✦ Generate with AI").disabled
+    assert any(
+        "Key present · connection not yet verified" in markdown.value
+        for markdown in app.markdown
+    )
+
+
 def test_curated_review_and_preview_finalization_flow() -> None:
     app = AppTest.from_file(str(APP), default_timeout=30).run()
     find_button(app, "Load curated demo set").click()
@@ -33,4 +47,3 @@ def test_curated_review_and_preview_finalization_flow() -> None:
     assert not app.exception
     assert app.session_state["finalization_result"]["previewOnly"] is True
     assert len(app.download_button) == 1
-

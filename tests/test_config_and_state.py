@@ -19,6 +19,10 @@ def test_settings_require_full_apps_script_configuration() -> None:
     assert settings.integration_configured
 
 
+def test_settings_default_to_current_free_stable_model() -> None:
+    assert load_settings({}).gemini_model == "gemini-3.6-flash"
+
+
 def test_fingerprint_changes_after_edit() -> None:
     questions = load_demo_questions()[1]
     first = question_fingerprint(questions)
