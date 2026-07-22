@@ -11,7 +11,9 @@ function runAllTests() {
     test();
     results.push({ name: test.name, status: 'passed' });
   });
-  return { ok: true, passed: results.length, results };
+  const summary = { ok: true, passed: results.length, results };
+  console.log(JSON.stringify(summary));
+  return summary;
 }
 
 
