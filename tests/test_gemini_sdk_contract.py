@@ -11,7 +11,7 @@ from src.question_generator import GeminiQuestionGenerator
 from src.sample_data import load_demo_questions, load_sample_jd
 
 
-def test_real_sdk_serializes_and_parses_interactions_contract() -> None:
+def test_real_sdk_serializes_and_parses_generate_content_contract() -> None:
     role, demo_questions = load_demo_questions()
     payload = GeneratedQuestionSet(
         role_title=role,
@@ -28,14 +28,15 @@ def test_real_sdk_serializes_and_parses_interactions_contract() -> None:
         return httpx.Response(
             200,
             json={
-                "status": "completed",
-                "model": "gemini-3.6-flash",
-                "steps": [
+                "candidates": [
                     {
-                        "type": "model_output",
-                        "content": [{"type": "text", "text": payload}],
+                        "content": {
+                            "role": "model",
+                            "parts": [{"text": payload}],
+                        },
+                        "finishReason": "STOP",
                     }
-                ],
+                ]
             },
             request=request,
         )
@@ -56,15 +57,15 @@ def test_real_sdk_serializes_and_parses_interactions_contract() -> None:
 
     assert generated_role == "Senior Analyst - D2C Growth"
     assert len(questions) == 15
-    assert captured["url"] == "https://generativelanguage.googleapis.com/v1beta/interactions"
+    assert captured["url"].endswith("/v1beta/models/gemini-3.6-flash:generateContent")
     request_body = captured["body"]
     assert isinstance(request_body, dict)
-    assert request_body["store"] is False
-    assert request_body["response_format"]["mime_type"] == "application/json"
-    assert request_body["response_format"]["schema"]["additionalProperties"] is False
+    generation_config = request_body["generationConfig"]
+    assert generation_config["responseMimeType"] == "application/json"
+    assert generation_config["responseJsonSchema"]["additionalProperties"] is False
 
 
-def test_real_sdk_falls_back_to_generate_content_contract() -> None:
+def test_real_sdk_falls_back_to_interactions_contract() -> None:
     role, demo_questions = load_demo_questions()
     payload = GeneratedQuestionSet(
         role_title=role,
@@ -78,14 +79,14 @@ def test_real_sdk_falls_back_to_generate_content_contract() -> None:
     def handler(request: httpx.Request) -> httpx.Response:
         body = json.loads(request.content.decode("utf-8"))
         requests.append((str(request.url), body))
-        if request.url.path.endswith("/interactions"):
+        if request.url.path.endswith(":generateContent"):
             return httpx.Response(
                 400,
                 json={
                     "error": {
                         "code": 400,
                         "status": "INVALID_ARGUMENT",
-                        "message": "Current endpoint is unavailable for this mock key",
+                        "message": "Structured generateContent is unavailable for this mock key",
                     }
                 },
                 request=request,
@@ -93,15 +94,14 @@ def test_real_sdk_falls_back_to_generate_content_contract() -> None:
         return httpx.Response(
             200,
             json={
-                "candidates": [
+                "status": "completed",
+                "model": "gemini-3.6-flash",
+                "steps": [
                     {
-                        "content": {
-                            "role": "model",
-                            "parts": [{"text": payload}],
-                        },
-                        "finishReason": "STOP",
+                        "type": "model_output",
+                        "content": [{"type": "text", "text": payload}],
                     }
-                ]
+                ],
             },
             request=request,
         )
@@ -121,8 +121,8 @@ def test_real_sdk_falls_back_to_generate_content_contract() -> None:
     assert generated_role == "Senior Analyst - D2C Growth"
     assert len(questions) == 15
     assert len(requests) == 2
-    assert requests[0][0].endswith("/v1beta/interactions")
-    assert requests[1][0].endswith("/v1beta/models/gemini-3.6-flash:generateContent")
-    generation_config = requests[1][1]["generationConfig"]
-    assert generation_config["responseMimeType"] == "application/json"
-    assert generation_config["responseJsonSchema"]["required"] == ["role_title", "questions"]
+    assert requests[0][0].endswith("/v1beta/models/gemini-3.6-flash:generateContent")
+    assert requests[1][0].endswith("/v1beta/interactions")
+    response_format = requests[1][1]["response_format"]
+    assert response_format["mime_type"] == "application/json"
+    assert response_format["schema"]["required"] == ["role_title", "questions"]
