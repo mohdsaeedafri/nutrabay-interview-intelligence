@@ -9,6 +9,8 @@
 | Apps Script server self-tests | 5 passed | Formula escaping, weighted math, payload validation, row schema, token comparison |
 | Apps Script client syntax | Pass | Browser JavaScript compiles under Node's JavaScript parser |
 | Streamlit HTTP smoke test | Pass | Headless server starts and `/_stcore/health` returns `ok` |
+| GitHub Actions | Pass | Remote CI run completed every install, compile, Python-test, and Apps Script-test step successfully |
+| Clean-clone release test | Pass | The public `main` branch was cloned into a fresh directory and all 29 + 5 tests passed again |
 | Git whitespace check | Pass | `git diff --check` reports no errors |
 | Secret scan | Pass with documented placeholders only | No API key, personal email, token value, or GitHub credential in tracked source |
 
@@ -22,7 +24,7 @@
 
 ## Live deployment validation
 
-Not yet run. It requires the repository to be pushed and the owner to complete the authenticated Google Apps Script and Streamlit Community Cloud deployments. The exact production test procedure is in `DEPLOYMENT.md`. A live item must not be marked passed until the public URL and resulting Google Sheet row have been directly verified.
+The repository is published and remotely validated. Live application validation is not yet run because the owner must complete the authenticated Google Apps Script and Streamlit Community Cloud deployments. The exact production test procedure is in `DEPLOYMENT.md`. A live item must not be marked passed until the public URL and resulting Google Sheet row have been directly verified.
 
 ## Known free-tier constraints
 
