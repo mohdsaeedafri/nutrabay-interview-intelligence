@@ -5,7 +5,7 @@ The codebase does not need any more product information to run. The remaining in
 ## Already decided
 
 - Product name: Nutrabay Interview Intelligence
-- Planned new repository: `mohdsaeedafri/nutrabay-interview-intelligence`
+- Repository: `mohdsaeedafri/nutrabay-interview-intelligence`
 - Access: public demo
 - Branding: polished default theme
 - Data: fictional sample data only
