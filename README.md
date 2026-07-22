@@ -1,5 +1,7 @@
 # Nutrabay Interview Intelligence
 
+[![CI](https://github.com/mohdsaeedafri/nutrabay-interview-intelligence/actions/workflows/ci.yml/badge.svg)](https://github.com/mohdsaeedafri/nutrabay-interview-intelligence/actions/workflows/ci.yml)
+
 A production-shaped assignment demo that turns a job description into a structured, human-reviewed interview plan and then scores candidates consistently.
 
 ## How it works
