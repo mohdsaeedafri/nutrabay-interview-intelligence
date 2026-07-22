@@ -1,0 +1,187 @@
+<script>
+  const CATEGORY_ORDER = ['Intent', 'Quant Ability', 'Job Competency', 'Core Competency', 'EQ'];
+  let questionSet = null;
+  let submitting = false;
+  const submissionId = makeUuid();
+
+  document.addEventListener('DOMContentLoaded', loadQuestionSet);
+  document.getElementById('score-form').addEventListener('submit', submitForm);
+
+  function loadQuestionSet() {
+    if (!QUESTION_SET_ID) {
+      showPageError('This scoring link is missing its question-set ID. Ask the hiring manager for a new link.');
+      return;
+    }
+    google.script.run
+      .withSuccessHandler(renderQuestionSet)
+      .withFailureHandler((error) => showPageError(safeMessage(error)))
+      .getQuestionSet(QUESTION_SET_ID);
+  }
+
+  function renderQuestionSet(data) {
+    questionSet = data;
+    document.getElementById('role-title').textContent = `${data.roleTitle} · ${data.questions.length} questions`;
+    const root = document.getElementById('question-groups');
+    root.textContent = '';
+
+    CATEGORY_ORDER.forEach((category) => {
+      const questions = data.questions.filter((question) => question.category === category);
+      if (!questions.length) return;
+      const section = document.createElement('section');
+      section.className = 'category-section';
+
+      const heading = document.createElement('h2');
+      heading.className = 'category-heading';
+      const count = document.createElement('span');
+      count.textContent = String(questions.length);
+      heading.append(count, document.createTextNode(category));
+      section.appendChild(heading);
+
+      questions.forEach((question) => section.appendChild(buildQuestionCard(question)));
+      root.appendChild(section);
+    });
+
+    document.getElementById('loading').classList.add('hidden');
+    document.getElementById('score-form').classList.remove('hidden');
+    document.getElementById('candidate-name').focus();
+  }
+
+  function buildQuestionCard(question) {
+    const card = document.createElement('article');
+    card.className = 'question-card';
+    card.dataset.questionId = question.id;
+
+    const number = document.createElement('div');
+    number.className = 'question-number';
+    number.textContent = `Question ${question.position} · ${question.category}`;
+    const text = document.createElement('div');
+    text.className = 'question-text';
+    text.textContent = question.text;
+    card.append(number, text);
+
+    const fieldset = document.createElement('fieldset');
+    const legend = document.createElement('legend');
+    legend.textContent = 'Score (required)';
+    const options = document.createElement('div');
+    options.className = 'score-options';
+    for (let score = 1; score <= 5; score += 1) {
+      const label = document.createElement('label');
+      const input = document.createElement('input');
+      input.type = 'radio';
+      input.name = `score-${question.id}`;
+      input.value = String(score);
+      input.required = true;
+      input.setAttribute('aria-label', `Score ${score} for question ${question.position}`);
+      const visual = document.createElement('span');
+      visual.textContent = String(score);
+      label.append(input, visual);
+      options.appendChild(label);
+    }
+    fieldset.append(legend, options);
+    card.appendChild(fieldset);
+
+    const notesLabel = document.createElement('label');
+    notesLabel.htmlFor = `notes-${question.id}`;
+    notesLabel.textContent = 'Notes (optional)';
+    const notes = document.createElement('textarea');
+    notes.id = `notes-${question.id}`;
+    notes.maxLength = 2000;
+    notes.placeholder = 'Capture evidence, examples, or follow-up observations.';
+    card.append(notesLabel, notes);
+    return card;
+  }
+
+  function submitForm(event) {
+    event.preventDefault();
+    if (submitting || !questionSet) return;
+    hideValidationError();
+
+    const candidateName = document.getElementById('candidate-name').value.trim();
+    if (candidateName.length < 2) {
+      showValidationError('Enter the candidate name before submitting.');
+      document.getElementById('candidate-name').focus();
+      return;
+    }
+
+    const answers = [];
+    for (const question of questionSet.questions) {
+      const selected = document.querySelector(`input[name="score-${question.id}"]:checked`);
+      if (!selected) {
+        showValidationError(`Select a score for question ${question.position}.`);
+        document.querySelector(`[data-question-id="${question.id}"]`).scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+      answers.push({
+        questionId: question.id,
+        score: Number(selected.value),
+        notes: document.getElementById(`notes-${question.id}`).value.trim()
+      });
+    }
+
+    const payload = {
+      submissionId,
+      questionSetId: questionSet.questionSetId,
+      candidateName,
+      answers
+    };
+    setSubmitting(true);
+    google.script.run
+      .withSuccessHandler(showSuccess)
+      .withFailureHandler((error) => {
+        setSubmitting(false);
+        showValidationError(safeMessage(error));
+      })
+      .submitScore(payload);
+  }
+
+  function showSuccess(result) {
+    document.getElementById('score-form').classList.add('hidden');
+    document.getElementById('success').classList.remove('hidden');
+    document.getElementById('receipt-id').textContent = result.submissionId;
+    if (!result.duplicate) {
+      document.getElementById('raw-score').textContent = `Raw score: ${result.rawTotal}/${result.rawMax}`;
+      document.getElementById('weighted-score').textContent = `Weighted: ${result.weightedPercent}%`;
+    } else {
+      document.getElementById('raw-score').textContent = 'This submission was already saved.';
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function setSubmitting(value) {
+    submitting = value;
+    const button = document.getElementById('submit-button');
+    button.disabled = value;
+    button.textContent = value ? 'Saving scorecard…' : 'Submit completed scorecard';
+  }
+
+  function showPageError(message) {
+    document.getElementById('loading').classList.add('hidden');
+    const element = document.getElementById('page-error');
+    element.textContent = message;
+    element.classList.remove('hidden');
+  }
+
+  function showValidationError(message) {
+    const element = document.getElementById('validation-error');
+    element.textContent = message;
+    element.classList.remove('hidden');
+  }
+
+  function hideValidationError() {
+    document.getElementById('validation-error').classList.add('hidden');
+  }
+
+  function safeMessage(error) {
+    const message = error && error.message ? String(error.message) : 'The scorecard could not be completed.';
+    return message.replace(/^Exception:\s*/, '').slice(0, 300);
+  }
+
+  function makeUuid() {
+    if (window.crypto && typeof window.crypto.randomUUID === 'function') return window.crypto.randomUUID();
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (char) => {
+      const random = Math.floor(Math.random() * 16);
+      const value = char === 'x' ? random : (random & 0x3) | 0x8;
+      return value.toString(16);
+    });
+  }
+</script>

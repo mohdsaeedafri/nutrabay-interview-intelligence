@@ -1,0 +1,66 @@
+{
+  "role_title": "Senior Analyst - D2C Growth",
+  "questions": [
+    {
+      "category": "Intent",
+      "text": "What specifically attracts you to the Senior Analyst - D2C Growth role at Nutrabay at this point in your career, and which two D2C problems would you most want to own in your first 90 days?"
+    },
+    {
+      "category": "Intent",
+      "text": "Over the next two years, what are you optimizing for in your career - depth of analytics, ownership of business outcomes, stakeholder exposure, or something else - and how does this role support that goal?"
+    },
+    {
+      "category": "Quant Ability",
+      "text": "In one week, 200,000 users add an item to cart, 120,000 start checkout, and 84,000 place an order. Sixty percent of orders are COD. COD RTO is 22% and prepaid RTO is 4%. Calculate cart-to-order conversion and realized orders after RTO for COD, prepaid, and total. Which lever would you investigate first, and why?"
+    },
+    {
+      "category": "Quant Ability",
+      "text": "Weekly cancellation rate rises from 5% to 8% on 20,000 orders with an average order value of INR 2,000. Estimate the incremental cancelled orders and GMV at risk. What else would you need before calling the movement statistically and commercially meaningful?"
+    },
+    {
+      "category": "Job Competency",
+      "text": "Nutrabay's checkout conversion drops from 3.8% to 3.1% in three days. Build a hypothesis tree and describe the first cuts you would make by traffic source, device, geography, SKU, and customer segment. How would you separate a symptom from the root cause?"
+    },
+    {
+      "category": "Job Competency",
+      "text": "Design a cohort analysis to determine whether first-time buyers acquired through discount-heavy campaigns become valuable 90-day customers. Define the cohort, outcome metrics, comparison groups, and biases that could make the result misleading."
+    },
+    {
+      "category": "Job Competency",
+      "text": "You must build a daily D2C health dashboard covering cancellation rate, cart drop-off, checkout conversion, COD-to-prepaid ratio, RTO percentage, and funnel leakage. How would you define the metrics, choose alert thresholds, and prevent false alarms from seasonality or low volume?"
+    },
+    {
+      "category": "Job Competency",
+      "text": "Walk us through an analysis or dashboard you built faster using an LLM or vibe-coding tool. What did the model create, how did you validate the calculations and code, and what controls prevented data leakage or confident but incorrect output?"
+    },
+    {
+      "category": "Core Competency",
+      "text": "A founder gives you the brief, 'Conversion is down - fix it by Friday.' How would you reframe the problem, align on the decision that must be made, and push back on unsupported assumptions without creating friction?"
+    },
+    {
+      "category": "Core Competency",
+      "text": "Tell us about an important business problem or anomaly that nobody assigned to you. How did you notice it, decide it deserved attention, investigate it, and ensure the finding resulted in action?"
+    },
+    {
+      "category": "Core Competency",
+      "text": "A competitor introduces a shorter checkout flow and a prepaid offer. How would you turn that observation into Nutrabay-specific hypotheses, prioritize them, and design a test that distinguishes correlation from causation?"
+    },
+    {
+      "category": "Core Competency",
+      "text": "Your analysis suggests the highest-priority fix belongs to Product, while Marketing and Visual Merchandising believe their initiatives matter more. How would you present the evidence, make trade-offs explicit, and drive a decision and follow-through?"
+    },
+    {
+      "category": "EQ",
+      "text": "Describe a time you were confident in an analysis and later found that you were wrong. How was the error discovered, how did you communicate it, and what did you change in your working method?"
+    },
+    {
+      "category": "EQ",
+      "text": "Tell us about a stakeholder who rejected or challenged a well-supported conclusion. What did you do to understand the resistance, and how did you preserve the relationship without weakening the analytical standard?"
+    },
+    {
+      "category": "EQ",
+      "text": "A serious metric anomaly appears while several leaders are requesting immediate answers and the data is incomplete. How do you manage the pressure, communicate uncertainty, divide the work, and avoid publishing a premature conclusion?"
+    }
+  ]
+}
+

@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <base target="_top">
+    <meta charset="utf-8">
+    <?!= include('Styles'); ?>
+  </head>
+  <body>
+    <main class="shell">
+      <header class="hero">
+        <div class="eyebrow">Nutrabay · Structured interview</div>
+        <h1>Candidate scorecard</h1>
+        <p id="role-title">Loading approved interview plan…</p>
+      </header>
+
+      <section class="scale" aria-label="Scoring scale">
+        <strong>Scoring guide</strong>
+        <div class="scale-grid">
+          <span><b>1</b> No evidence / poor</span>
+          <span><b>2</b> Weak evidence</span>
+          <span><b>3</b> Meets expectations</span>
+          <span><b>4</b> Strong evidence</span>
+          <span><b>5</b> Exceptional evidence</span>
+        </div>
+      </section>
+
+      <div id="page-error" class="message error hidden" role="alert"></div>
+      <div id="loading" class="loading" aria-live="polite"><span class="spinner"></span> Loading questions…</div>
+
+      <form id="score-form" class="hidden" novalidate>
+        <section class="candidate-card">
+          <label for="candidate-name">Candidate name <span aria-hidden="true">*</span></label>
+          <input id="candidate-name" name="candidateName" type="text" minlength="2" maxlength="100" autocomplete="off" required placeholder="Enter candidate name">
+          <small>Use “Sample Candidate - Demo” when testing this public assignment.</small>
+        </section>
+
+        <div id="question-groups"></div>
+
+        <div id="validation-error" class="message error hidden" role="alert"></div>
+        <button id="submit-button" type="submit">Submit completed scorecard</button>
+        <p class="privacy">Candidate data is written to the assignment’s Google Sheet. It is never sent to the AI question generator.</p>
+      </form>
+
+      <section id="success" class="success-panel hidden" aria-live="polite">
+        <div class="success-icon">✓</div>
+        <h2>Scorecard submitted</h2>
+        <p>The interview record has been saved successfully.</p>
+        <div class="receipt"><span>Receipt ID</span><code id="receipt-id"></code></div>
+        <div class="summary"><span id="raw-score"></span><span id="weighted-score"></span></div>
+      </section>
+
+      <footer>Human-reviewed questions · Anchored scoring · Sample data only</footer>
+    </main>
+    <script>const QUESTION_SET_ID = <?!= JSON.stringify(questionSetId) ?>;</script>
+    <?!= include('Scripts'); ?>
+  </body>
+</html>
+

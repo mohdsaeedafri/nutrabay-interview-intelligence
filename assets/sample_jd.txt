@@ -1,0 +1,26 @@
+Job Role: Senior Analyst - D2C Growth | Nutrabay
+
+You should apply if you have:
+- A sharp, analytical mind that asks "why" three levels deep - whether your background is product analytics, growth, or e-commerce.
+- Strong problem-solving and RCA skills - you can go from "something is wrong" to a structured diagnosis with evidence.
+- Quantitative comfort with cohort analysis, funnel math, and statistical reasoning.
+- An AI-first workflow - you use LLMs and vibe-coding tools to move faster than a traditional analyst would.
+- Stakeholder management ability - you can present a nuanced finding to a department head and push back on a poorly framed brief without friction.
+- An ownership-driven attitude - you investigate problems no one assigned to you and see findings through to action.
+
+Skills Required - Must Have:
+- RCA & Problem Solving: structured, hypothesis-driven root cause analysis from symptom to cause to fix.
+- Data Interpretation & Logical Reasoning: read a dataset, identify what matters, spot what is missing, and draw defensible conclusions.
+- Metrics Fluency: deep grasp of funnel and product metrics, how they connect, and what levers move them.
+- Analytics Tools: Excel/Google Sheets for modelling and at least one BI tool such as Metabase or Looker.
+- AI-Assisted Building: actively use LLMs and vibe-coding tools to build dashboards and automate analysis.
+
+What will you do?
+- Own and monitor daily D2C KPIs: cancellation rate, cart drop-off, checkout conversion, COD-to-prepaid ratio, RTO percentage, and funnel-stage leakage; flag anomalies early.
+- Run structured RCAs by traffic source, device, geography, SKU, and customer segment; separate symptoms from causes and go three levels deep before proposing a fix.
+- Benchmark checkout flow, pricing architecture, offer mechanics, and CRM nudges used by leading D2C brands, translating observations into Nutrabay-specific hypotheses.
+- Convert findings into crisp, prioritized proposals for Product, Marketing, and Visual Merchandising and follow through to action.
+- Present findings and recommendations directly to department heads and founders as clear, actionable narratives.
+
+Experience: 2-4 years | Location: Gurugram (Work from Office)
+
