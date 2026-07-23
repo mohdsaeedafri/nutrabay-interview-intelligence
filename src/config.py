@@ -39,7 +39,7 @@ def _read(name: str, secrets: Mapping[str, Any] | None, default: str = "") -> st
 def load_settings(secrets: Mapping[str, Any] | None = None) -> Settings:
     return Settings(
         gemini_api_key=_read("GEMINI_API_KEY", secrets),
-        gemini_model=_read("GEMINI_MODEL", secrets, "gemini-3.6-flash"),
+        gemini_model=_read("GEMINI_MODEL", secrets, "gemini-3.5-flash-lite"),
         apps_script_url=_read("APPS_SCRIPT_WEB_APP_URL", secrets),
         integration_token=_read("INTEGRATION_TOKEN", secrets),
     )
