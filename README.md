@@ -4,14 +4,21 @@
 
 A production-shaped assignment demo that turns a job description into a structured, human-reviewed interview plan and then scores candidates consistently.
 
+## Live demo
+
+- Streamlit application: https://nutrabay-interview-intelligence-3duq37sbxlfsunvebjwmdc.streamlit.app/
+- Google Apps Script scorecard base: https://script.google.com/macros/s/AKfycbyxPOvs8DgQACKtmb2iHJksyzyVscO0AOo26a7wg4U4S1x4PDqemw5w3TNmBvIRvEc/exec
+
+Use fictional sample data only.
+
 ## How it works
 
-1. **Streamlit** accepts a JD and generates 10–15 structured questions with Gemini.
+1. **Streamlit** accepts a JD and generates 10-15 structured questions with Gemini.
 2. A manager can edit, replace, add, recategorize, exclude, and approve questions.
 3. **Google Apps Script** serves the required public scorecard.
 4. **Google Sheets** stores approved sets and one complete response row per evaluation.
 
-Google Sheets is the free cloud data store; no separate database is required. A clearly labelled curated question set keeps the demo usable when AI secrets are not configured.
+Google Sheets is the free cloud data store; no separate database is required. A clearly labelled curated question set keeps the demo usable when live AI is unavailable.
 
 ## Local setup
 
@@ -27,10 +34,12 @@ Never commit `.streamlit/secrets.toml`. Its expected server-side values are:
 
 ```toml
 GEMINI_API_KEY = "replace-locally"
-GEMINI_MODEL = "gemini-3.6-flash"
+GEMINI_MODEL = "gemini-3.5-flash-lite"
 APPS_SCRIPT_WEB_APP_URL = "https://script.google.com/macros/s/DEPLOYMENT_ID/exec"
 INTEGRATION_TOKEN = "replace-with-a-random-value-at-least-32-characters-long"
 ```
+
+The production demo was successfully validated with `gemini-3.5-flash-lite`. Model availability and free-tier quotas can vary by account and project.
 
 ## Validation
 
@@ -40,10 +49,11 @@ pytest
 node scripts/apps_script_self_test.js
 ```
 
-The repository includes Python unit tests, Streamlit AppTest coverage, Apps Script server self-tests, client JavaScript syntax validation, and GitHub Actions CI.
+The repository includes Python unit tests, Streamlit AppTest coverage, Gemini SDK contract tests, Apps Script server self-tests, client JavaScript syntax validation, and GitHub Actions CI.
 
 ## Documentation
 
+- [Final assignment walkthrough](docs/FINAL_SUBMISSION.md)
 - [Free-tier deployment and live E2E checklist](docs/DEPLOYMENT.md)
 - [Requirements traceability](docs/REQUIREMENTS_TRACEABILITY.md)
 - [Reusable AI-agent build prompt](docs/AI_AGENT_BUILD_PROMPT.md)
